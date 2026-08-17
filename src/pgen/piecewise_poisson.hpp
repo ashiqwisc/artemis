@@ -45,19 +45,22 @@ inline void ProblemGenerator(MeshBlock *pmb, ParameterInput *pin) {
 
     // Configuration checks 
     auto &artemis_pkg = pmb->packages.Get("artemis");
+    PARTHENON_REQUIRE(artemis_pkg->Param<std::bool>("do_gas"),
+                    "Enable gas package");
+    auto &gas_pkg = pmb->packages.Get("gas");
+    PARTHENON_REQUIRE(artemis_pkg->Param<bool>("do_self_gravity"),
+                    "Enable self_gravity package");
     auto &grav_pkg = pmb->packages.Get("self_gravity");
     // Check 4piG=1 (from grav_slab.hpp)
-    PARTHENON_REQUIRE(grav_pkg->Param<Real>("four_pi_G") == gsv.four_pi_G,
-                    "grav_slab requires 4piG=1 via self_gravity/units_override=true");
+    PARTHENON_REQUIRE(grav_pkg->Param<Real>("four_pi_G") == 1.0,
+                    "piecewise_poisson requires 4piG=1 via self_gravity/units_override=true");
     // Check Cartesian geometry 
     PARTHENON_REQUIRE(GEOM == Coordinates::cartesian,
                 "Need cartesian coordinates");
     // Check gas EOS is ideal gas 
-    PARTHENON_REQUIRE(artemis_pkg->do_gas == true,
-                    "EOS needs to be ideal gas EOS");
-    auto &gas_pkg = pmb->packages.Get("gas");
     PARTHENON_REQUIRE(gas_pkg->Param<std::string>("eos_type") == "ideal",
                     "EOS needs to be ideal gas EOS");
+    const Real adiabatic_index = gas_pkg->Param<std::const>("adiabatic_index");
 
     // TODO: Set piecewise constant problem fields in MeshBlock (which is the object describing the mesh btw). Make sure to init density properly 
 
