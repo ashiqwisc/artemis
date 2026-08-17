@@ -1,0 +1,98 @@
+# ========================================================================================
+#  (C) (or copyright) 2026. Triad National Security, LLC. All rights reserved.
+#
+#  This program was produced under U.S. Government contract 89233218CNA000001 for Los
+#  Alamos National Laboratory (LANL), which is operated by Triad National Security, LLC
+#  for the U.S. Department of Energy/National Nuclear Security Administration. All rights
+#  in the program are reserved by Triad National Security, LLC, and the U.S. Department
+#  of Energy/National Nuclear Security Administration. The Government is granted for
+#  itself and others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide
+#  license in this material to reproduce, prepare derivative works, distribute copies to
+#  the public, perform publicly and display publicly, and to permit others to do so.
+# ========================================================================================
+
+# solve Poisson's equation with piecewise constant density, i.e. set 4\piG = 1 and let \rho = \sum_{i \in [n]} \rho_i 1_{\Omega_i}; \rho_i and \Omega_i are randomized
+
+<artemis>
+problem = piecewise_poisson      # name of the pgen
+coordinates = cartesian  # coordinate system
+
+<parthenon/job>
+problem_id = piecewise_poisson  # problem ID: basename of output filenames
+
+<parthenon/output1> # this will write out the pair of (discretized piecewise density, discretized solution), which is what we need
+file_type = hdf5  # HDF5 data dump
+variables = gas.prim.density, &
+            grav.phi, &
+            grav.rhs # keeping for debugging purposes 
+dt        = 1.0   # time increment between outputs
+
+<parthenon/output2> # this usually writes out scalar diagnostics like total energy; no need for our case 
+file_type = hst   # HDF5 data dump
+dt        = 1.0   # time increment between outputs
+
+<parthenon/time>
+nlim       = 1     # cycle limit. Want to perform one cycle here since don't want time-dependent problem 
+tlim       = 1.0  # time limit (to be reset by problem generator). I set this to 1.0 for simplicity
+integrator = rk1    # time integration algorithm. Use rk1 for simple baseline
+ncycle_out = 1      # interval for stdout summary info
+
+<parthenon/mesh>
+# do_coalesced_comms = true
+refinement = none # no AMR 
+multigrid = true # keeping multigrid to accelerate linear solve 
+
+# 2D mesh on [-32, 32] x [-32, 32]
+nx1 = 64
+x1min = -32.0
+x1max = 32.0
+# we force 0-dirichlet boundary conditions in the <self_gravity> section (because this codebase is Poisson's eq. for graviational potentials), so this stuff doesn't matter
+ix1_bc = outflow # outflow boundary condition copies nearest interior value into ghost cells, yielding finite-dif approx. for derivative on face connecting nearest interior cell and ghost cell to be 0. 
+ox1_bc = outflow
+
+nx2 = 64
+x2min = -32.0
+x2max = 32.0
+ix2_bc = outflow
+ox2_bc = outflow
+
+nx3 = 1 # no 3rd dim 
+x3min = -32.0 # keep this, because solver still reads even though irrelevant
+x3max = 32.0 # keep this, because solver still reads even though irrelevant
+ix3_bc = outflow
+ox3_bc = outflow
+
+<parthenon/meshblock>
+nx1 = 16
+nx2 = 16
+nx3 = 1 # no 3rd dim 
+
+<physics>
+gas = true # activates gas package; need this because this is where the density variable gas.prim.density is stored 
+self_gravity = true # activates self_gravity package; needed becauset this is where Poisson's equation LHS & RHS are as well as linear solver 
+
+<gas> 
+update_fluxes = false # this is useful when we have density on RHS \rho_t and are doing a more complex PDE. No need for now 
+
+<gas/eos/ideal>
+gamma = 2.0 # artemis package requires equation of state; use ideal gas equation of state, ensure only unknown is \rho (P_0 set below)
+
+<self_gravity>
+print_per_step = true # print solver convergence info 
+max_iterations = 100 # max iters of linear solver 
+residual_tolerance = 1.0e-6
+units_override = true # don't calculate physical units of RHS 
+four_pi_G = 1 # make sure RHS is \rho (units_override should already do this, but just in case)
+use_swindle = false # Jean's swindle, subtracts mean density (i.e. \rho - \bar{\rho} on RHS). No need in our setting 
+# set 0-Dirichlet boundary conditions 
+ix1_bc = zero
+ox1_bc = zero
+ix2_bc = zero
+ox2_bc = zero
+
+<problem>
+subdomains = 2 
+rho_1 = 2
+rho_2 = 3 
+threshold = 20 
+auxiliary_pressure = 5 # P_0 set to ensure ideal gas equation of state (eos) is satisfied and only unknown is \rho 
