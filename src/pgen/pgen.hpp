@@ -37,6 +37,7 @@
 #include "shock.hpp"
 #include "strat.hpp"
 #include "thermalization.hpp"
+#include "piecewise_poisson.hpp"
 
 using namespace parthenon::package::prelude;
 
@@ -84,6 +85,8 @@ void ProblemGenerator(MeshBlock *pmb, ParameterInput *pin) {
     thermalization::ProblemGenerator<T>(pmb, pin);
   } else if (name == "crooked_pipe") {
     crooked_pipe::ProblemGenerator<T>(pmb, pin);
+  } else if (name == "piecewise_poisson") {
+    piecewise_poisson::ProblemGenerator<T>(pmb, pin);
   } else {
     PARTHENON_FAIL("Invalid problem name!");
   }
@@ -93,7 +96,7 @@ void ProblemGenerator(MeshBlock *pmb, ParameterInput *pin) {
 //! \fn  StateDescriptor artemis::InitMeshBlockData
 //! \brief Driver routine to initialize meshblock data when meshblocks are created
 template <Coordinates GEOM>
-void InitMeshBlockData(MeshBlock *pmb, ParameterInput *pin) {
+void InitMeshBlockData(MeshBlock *pmb, ParameterInput *pin) { // note: persistent MeshBlock-specific fields go here 
   PARTHENON_INSTRUMENT
 
   geometry::InitBlockGeom<GEOM>(pmb, pin);
@@ -109,7 +112,7 @@ void InitMeshBlockData(MeshBlock *pmb, ParameterInput *pin) {
     shock::InitShockParams(pmb, pin);
   } else if (name == "strat") {
     strat::InitStratParams(pmb, pin);
-  }
+  } 
 }
 
 } // namespace artemis

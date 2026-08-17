@@ -92,7 +92,8 @@ ox2_bc = zero
 
 <problem>
 subdomains = 2 
-rho_1 = 2
-rho_2 = 3 
-threshold = 20 
-auxiliary_pressure = 5 # P_0 set to ensure ideal gas equation of state (eos) is satisfied and only unknown is \rho 
+rho_1 = 1
+rho_2 = 2 
+threshold = 0 
+auxiliary_pressure = 1 # P_0 set to ensure ideal gas equation of state (eos) is satisfied and only unknown is \rho 
+# velocity field, which needs to be set to use gas package, is set to 0 in hpp file 

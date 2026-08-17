@@ -78,6 +78,7 @@ set (SRC_LIST
   pgen/shock.hpp
   pgen/strat.hpp
   pgen/thermalization.hpp
+  pgen/piecewise_poisson.hpp
 
   radiation/radiation.cpp
   radiation/radiation.hpp
