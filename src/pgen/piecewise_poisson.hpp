@@ -16,8 +16,7 @@
 #include "geometry/geometry.hpp"
 #include "utils/artemis_utils.hpp"
 
-namespace piecewise_poisson {
-
+namespace piecewise_poisson { // much of this is ported from polytrope.hpp
 //----------------------------------------------------------------------------------------
 //! \fn void ProblemGenerator::LinearWave_()
 //! \brief Sets density and subdomains for piecewise constant Poisson eq. tests
@@ -44,12 +43,23 @@ inline void ProblemGenerator(MeshBlock *pmb, ParameterInput *pin) {
     const auto &cpars =
         pmb->packages.Get("artemis")->template Param<geometry::CoordParams>("coord_params");
 
-    // TODO: Configuration checks 
+    // Configuration checks 
+    auto &artemis_pkg = pmb->packages.Get("artemis");
+    auto &grav_pkg = pmb->packages.Get("self_gravity");
+    // Check 4piG=1 (from grav_slab.hpp)
+    PARTHENON_REQUIRE(grav_pkg->Param<Real>("four_pi_G") == gsv.four_pi_G,
+                    "grav_slab requires 4piG=1 via self_gravity/units_override=true");
+    // Check Cartesian geometry 
+    PARTHENON_REQUIRE(GEOM == Coordinates::cartesian,
+                "Need cartesian coordinates");
+    // Check gas EOS is ideal gas 
+    PARTHENON_REQUIRE(artemis_pkg->do_gas == true,
+                    "EOS needs to be ideal gas EOS");
+    auto &gas_pkg = pmb->packages.Get("gas");
+    PARTHENON_REQUIRE(gas_pkg->Param<std::string>("eos_type") == "ideal",
+                    "EOS needs to be ideal gas EOS");
 
     // TODO: Set piecewise constant problem fields in MeshBlock (which is the object describing the mesh btw). Make sure to init density properly 
-
-    // 
-
 
     // Polytrope params
     const int iprob = pin->GetOrAddInteger("problem", "iprob", 1);
