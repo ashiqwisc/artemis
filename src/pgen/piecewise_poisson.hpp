@@ -79,7 +79,7 @@ inline void ProblemGenerator(MeshBlock *pmb, ParameterInput *pin) {
 
   // Initialize rho=rho1 for x1<threshold and rho=rho2 otherwise. 
   pmb->par_for(
-      "pgen_piecewise_poisson", kb.s, kb.e, jb.s, jb.e, ib.s, ib.e,
+      "pgen_piecewise_poisson", kb.s, kb.e, jb.s, jb`.e, ib.s, ib.e,
       KOKKOS_LAMBDA(const int k, const int j, const int i) {
         geometry::Coords<GEOM> coords(cpars, pco, k, j, i);
         const auto &xv = coords.GetCellCenter();
