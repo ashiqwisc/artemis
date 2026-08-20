@@ -28,7 +28,7 @@ def assemble_field(field, logical_locations):
 
 def main():
     random.seed(42)
-    M = 5
+    M = 10000
     rho_min = 0.5
     rho_max = 2.0
 
@@ -43,13 +43,13 @@ def main():
     potential_fields = []
 
     for i in range(M):
-        # Sample rho_1^{(m)}, rho_2^{(m)}, and T_m.
+        # Sample a_1^{(m)}, a_2^{(m)}, and T_m
         rho_1 = random.uniform(rho_min, rho_max)
         rho_2 = random.uniform(rho_min, rho_max)
         threshold = random.randint(-24, 24)
         parameters.append((rho_1, rho_2, threshold))
 
-        # Run the Poisson solver in a separate directory for this sample.
+        # Run the Poisson solver in a separate directory to obtain u^{(m)}
         sample_id = f"sample_{i:05d}"
         sample_dir = output_root / sample_id
         sample_dir.mkdir(exist_ok=True)
@@ -70,7 +70,7 @@ def main():
             check=True,
         )
 
-        # Verify and load the HDF5 output.
+        # Verify and load the HDF5 output
         output_file = sample_dir / f"{sample_id}.out1.final.phdf"
         if not output_file.is_file():
             raise FileNotFoundError(f"Missing Artemis output: {output_file}")
@@ -117,7 +117,7 @@ def main():
                 figure.savefig(sample_dir / "rho_and_phi.png", dpi=200)
                 plt.close(figure)
 
-    # Save NumPy-compatible arrays that can later be loaded by PyTorch.
+    # Save numpy arrays; for pytorch use later  
     dataset_file = output_root / "piecewise_poisson_dataset.h5"
     with h5py.File(dataset_file, "w") as data:
         data.create_dataset("parameters", data=np.asarray(parameters))
