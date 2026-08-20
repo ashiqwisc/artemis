@@ -1,19 +1,22 @@
 
+import random 
+
 def main(): 
-    # Seed 
+    random.seed(42)
+    M = 10000 
+    for i in range(0, M): 
+        print("0")
 
-    # Init storage (a = \rho, u = \phi)
-
-    # For m = 1, ..., N: 
         # sample a_1^{(m)}, a_2^{(m)}, T_m 
 
         # Construct a from these 
 
         # Run Poisson solver via mpirun to obtain u
-        
-        # Save (a_1^{(m)}, a_2^{(m)}, T_m, u) to storage 
-    
-    return 0
+            
+        # Verify hdf5 outputs, load hdf5 files, and save PyTorch tensors: 
+            # (M, M, M) tensor for (a_1^{(m)}, a_2^{(m)}, T_m)_{i = 1}^M
+            # (M, N, N) tensor for (a^{(m)})_{i = 1}^M 
+            # (M, N, N) tensor for (u^{(m)})_{i = 1}^M 
 
 if __name__ == "main": 
     main() 
