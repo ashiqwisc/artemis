@@ -43,14 +43,14 @@ refinement = none # no AMR
 multigrid = true # keeping multigrid to accelerate linear solve 
 
 # 2D mesh on [-32, 32] x [-32, 32]
-nx1 = 64
+nx1 = 128
 x1min = -32.0
 x1max = 32.0
 # we force 0-dirichlet boundary conditions in the <self_gravity> section (because this codebase is Poisson's eq. for graviational potentials), so this stuff doesn't matter
 ix1_bc = outflow # outflow boundary condition copies nearest interior value into ghost cells, yielding finite-dif approx. for derivative on face connecting nearest interior cell and ghost cell to be 0. 
 ox1_bc = outflow
 
-nx2 = 64
+nx2 = 128
 x2min = -32.0
 x2max = 32.0
 ix2_bc = outflow

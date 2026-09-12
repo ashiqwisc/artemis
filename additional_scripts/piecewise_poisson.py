@@ -165,6 +165,17 @@ def ensure_field_datasets(dataset, density, potential):
         dataset.flush()
 
 
+def print_progress(completed, total, width=40):
+    fraction = completed / total
+    filled = int(width * fraction)
+    bar = "=" * filled + "-" * (width - filled)
+    print(
+        f"\r[{bar}] {completed:,}/{total:,} ({100.0 * fraction:6.2f}%)",
+        end="\n" if completed == total else "",
+        flush=True,
+    )
+
+
 def main():
     args = parse_arguments()
 
@@ -172,7 +183,7 @@ def main():
     executable = repo / "build" / "src" / "artemis"
     input_file = repo / "inputs" / "piecewise_poisson" / "piecewise.in"
 
-    output_dir = args.output_dir or repo / "runs" / "piecewise_poisson_dataset"
+    output_dir = args.output_dir or repo / "runs" / "piecewise_poisson_dataset_128"
     output_dir = output_dir.resolve()
     figure_dir = output_dir / "figures"
     scratch_dir = output_dir / "artemis_scratch"
@@ -194,6 +205,7 @@ def main():
                 f"Resuming with {initial_completed}/{args.samples} samples complete",
                 flush=True,
             )
+        print_progress(completed_count, args.samples)
 
         for sample, (rho_1, rho_2, threshold_value) in enumerate(parameters):
             if completed[sample]:
@@ -222,11 +234,7 @@ def main():
             remove_native_outputs(scratch_dir)
 
             completed_count += 1
-            if completed_count % 100 == 0 or completed_count == args.samples:
-                print(
-                    f"Completed {completed_count}/{args.samples} samples",
-                    flush=True,
-                )
+            print_progress(completed_count, args.samples)
 
         dataset.attrs["status"] = "complete"
         dataset.flush()
