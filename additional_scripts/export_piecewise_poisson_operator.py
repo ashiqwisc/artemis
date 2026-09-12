@@ -17,7 +17,7 @@ DEFAULT_BATCH_SIZE = 64
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description=(
-            "Export the discrete Poisson matrix A, its dense inverse G=A^{-1}, "
+            "Export the discrete Poisson matrix M, its dense inverse G=M^{-1}, "
             "and an equivalent compact spectral factorization."
         )
     )
@@ -88,7 +88,7 @@ def write_dense_inverse(dataset, matrix, batch_size):
         residual = matrix @ columns - right_hand_sides
         max_residual = max(max_residual, float(np.max(np.abs(residual))))
 
-        # A is symmetric, so columns start:stop of A^{-1} are the corresponding rows.
+        # M is symmetric, so columns start:stop of M^{-1} are the corresponding rows.
         dataset[start:stop, :] = columns.T
         dataset.file.flush()
         print(f"Materialized rows {stop:,}/{order:,}", flush=True)
@@ -142,7 +142,7 @@ def export_operator(output, dimension, nx, domain, batch_size):
             data.attrs["spacing"] = spacing
             data.attrs["equation"] = "laplacian(u) = rho"
             data.attrs["boundary_condition"] = "u = 0 on boundary faces"
-            data.attrs["operator_definition"] = "u_flat = G @ rho_flat; G = A^{-1}"
+            data.attrs["operator_definition"] = "u_flat = G @ rho_flat; G = M^{-1}"
             data.attrs["flatten_order"] = "C"
             data.attrs["flat_index"] = "i + nx*j (2D); i (1D)"
             data.attrs["dtype"] = "float64"
@@ -154,7 +154,7 @@ def export_operator(output, dimension, nx, domain, batch_size):
             if dimension == 2:
                 grid.create_dataset("y", data=x)
 
-            write_csr(data.create_group("A_csr"), matrix)
+            write_csr(data.create_group("M_csr"), matrix)
 
             spectral = data.create_group("spectral_factorization")
             spectral.attrs["definition_1d"] = (
@@ -175,7 +175,7 @@ def export_operator(output, dimension, nx, domain, batch_size):
                 chunks=(chunk_rows, order),
                 fletcher32=True,
             )
-            dense_inverse.attrs["definition"] = "dense inverse of A"
+            dense_inverse.attrs["definition"] = "dense inverse of M"
             dense_inverse.attrs["application"] = "u_flat = G @ rho_flat"
             max_residual = write_dense_inverse(dense_inverse, matrix, batch_size)
             data.attrs["max_column_inverse_residual"] = max_residual
